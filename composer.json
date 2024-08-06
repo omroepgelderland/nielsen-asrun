@@ -1,0 +1,34 @@
+{
+    "name": "omroepgelderland/nielsen-asrun",
+    "description": "Generator for Nielsen Hybrid Audit AsRunLogs and Program Before files.",
+    "type": "library",
+    "keywords": [
+        "nielsen",
+        "asrunlog",
+        "asrunlogs",
+        "hybrid audit"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Remy Glaser",
+            "email": "rglaser@gld.nl"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.1",
+        "ext-date": "*",
+        "ext-iconv": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "nielsen_asrun\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "1.11.9",
+        "bartlett/php-compatinfo": "7.1.4"
+    }
+}
