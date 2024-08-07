@@ -2,4 +2,4 @@
 
 namespace nielsen_asrun;
 
-class TimeOutsideBounds extends ASRunlogException {}
+class TimeOutsideBounds extends ASRunException {}

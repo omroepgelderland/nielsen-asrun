@@ -13,7 +13,7 @@ composer require omroepgelderland/nielsen-asrun
 ## Usage example
 
 ```php
-use nielsen_asrun\AsRunEntry;
+use nielsen_asrun\Entry;
 use nielsen_asrun\Log;
 use nielsen_asrun\PromoType;
 use nielsen_asrun\RepeatCode;
@@ -29,7 +29,7 @@ $log = Log::create_asrunlog([
 ]);
 
 // Add a program entry
-$log->add_entry(AsRunEntry::create_program_entry([
+$log->add_entry(Entry::create_program_entry([
     'channel_id' => 234,
     'omroepen' => ['OB'],
     'starttime' => new \DateTime('2024-06-17 02:00:00'),
@@ -40,7 +40,7 @@ $log->add_entry(AsRunEntry::create_program_entry([
 ]));
 
 // Add a break entry
-$log->add_entry(AsRunEntry::create_break_entry([
+$log->add_entry(Entry::create_break_entry([
     'channel_id' => 234,
     'omroepen' => ['OB'],
     'starttime' => new \DateTime('2024-06-17 06:57:04'),
@@ -49,7 +49,7 @@ $log->add_entry(AsRunEntry::create_break_entry([
 ]));
 
 // Add a promo entry
-$log->add_entry(AsRunEntry::create_promo_entry([
+$log->add_entry(Entry::create_promo_entry([
     'channel_id' => 234,
     'omroepen' => ['OB'],
     'starttime' => new \DateTime('2024-06-17 02:03:30'),
@@ -60,7 +60,7 @@ $log->add_entry(AsRunEntry::create_promo_entry([
 ]));
 
 // Add a station id entry
-$log->add_entry(AsRunEntry::create_station_id_entry([
+$log->add_entry(Entry::create_station_id_entry([
     'channel_id' => 234,
     'omroepen' => ['OB'],
     'starttime' => new \DateTime('2024-06-17 07:04:53'),

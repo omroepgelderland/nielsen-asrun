@@ -16,7 +16,7 @@ class Log {
     private string $author;
     private string $channel_name;
     private string $channel_abbreviation;
-    /** @var list<AsRunEntry> */
+    /** @var list<Entry> */
     private $entries;
 
     /**
@@ -46,6 +46,7 @@ class Log {
     }
 
     /**
+     * Create a new AsRunLog.
      * @param array{
      *     typology_source?: TypologySource,
      *     encoding: string,
@@ -63,6 +64,7 @@ class Log {
     }
 
     /**
+     * Create a new Program Before file.
      * @param array{
      *     typology_source?: TypologySource,
      *     encoding: string,
@@ -100,13 +102,13 @@ class Log {
      * @throws TimeOutsideBounds If the start time or end time is outside of the
      * range of the logfile.
      */
-    public function add_entry( AsRunEntry $entry ): void {
+    public function add_entry( Entry $entry ): void {
         if (
-            $entry->starttime < $this->get_starttime()
-            || $entry->endtime > $this->get_endtime()
+            $entry->get_starttime() < $this->get_starttime()
+            || $entry->get_endtime() > $this->get_endtime()
         ) {
             throw new TimeOutsideBounds(
-                "Entry times {$entry->starttime->format('c')}–{$entry->endtime->format('c')} are outide of the "
+                "Entry times {$entry->get_starttime()->format('c')}–{$entry->get_endtime()->format('c')} are outide of the "
                 ."broadcastday {$this->get_starttime()->format('c')}–{$this->get_endtime()->format('c')}"
             );
         }
@@ -195,11 +197,11 @@ class Log {
         \usort($this->entries, $this->usort_cmp(...));
     }
 
-    private function usort_cmp( AsRunEntry $a, AsRunEntry $b ): int {
-        if ( $a->starttime == $b->starttime ) {
+    private function usort_cmp( Entry $a, Entry $b ): int {
+        if ( $a->get_starttime() == $b->get_starttime() ) {
             return 0;
         }
-        return ( $a->starttime < $b->starttime ) ? -1 : 1;
+        return ( $a->get_starttime() < $b->get_starttime() ) ? -1 : 1;
     }
     
     /**
@@ -223,17 +225,17 @@ class Log {
             $second = new \DateInterval('PT1S');
             if ( $entry->program_type === ProgramType::Break ) {
                 if ( $i > 0 ) {
-                    $prev_end = clone ($this->entries[$i-1]->endtime);
+                    $prev_end = $this->entries[$i-1]->get_endtime();
                 } else {
                     $prev_end = $this->get_starttime();
                 }
                 if ( $i+1 < count($this->entries) ) {
-                    $next_start = clone ($this->entries[$i+1]->starttime);
+                    $next_start = $this->entries[$i+1]->get_starttime();
                 } else {
                     $next_start = $this->get_endtime();
                 }
-                $entry->starttime = $prev_end->add($second);
-                $entry->endtime = $next_start->sub($second);
+                $entry->set_starttime($prev_end->add($second));
+                $entry->set_endtime($next_start->sub($second));
             }
         }
     }
@@ -246,14 +248,33 @@ class Log {
         $second = new \DateInterval('PT1S');
         foreach ( $this->entries as $i => $entry ) {
             if ( $i+1 < count($this->entries) ) {
-                $next_start = clone ($this->entries[$i+1]->starttime);
+                $next_start = $this->entries[$i+1]->get_starttime();
             } else {
                 $next_start = $this->get_endtime()->add($second);
             }
-            if ( $entry->endtime >= $next_start ) {
-                $entry->endtime = $next_start->sub($second);
+            if ( $entry->get_endtime() >= $next_start ) {
+                $entry->set_endtime($next_start->sub($second));
             }
         }
+    }
+
+    /**
+     * Fill all time gaps. All gaps are added to the preceding entry.
+     * If there is a gap at the start of the log the start of the first entry is
+     * changed to the log start time.
+     * If there is a gap at the end the last entry is extended until the log end
+     * time.
+     */
+    public function fill_gaps(): void {
+        $this->sort();
+        $second = new \DateInterval('PT1S');
+        for ( $i = 0; $i < count($this->entries) - 1; $i++ ) {
+            $entry = $this->entries[$i];
+            $next_entry = $this->entries[$i+1];
+            $entry->set_endtime($next_entry->get_starttime()->sub($second));
+        }
+        $this->entries[0]->set_starttime($this->get_starttime());
+        $this->entries[count($this->entries) - 1]->set_endtime($this->get_endtime());
     }
 
     /**

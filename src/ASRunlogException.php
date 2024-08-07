@@ -2,4 +2,4 @@
 
 namespace nielsen_asrun;
 
-class ASRunlogException extends \Exception {}
+class ASRunException extends \Exception {}
