@@ -31,32 +31,66 @@
  */
 class Entry {
 
-    /** @var Params */
-    private array $data;
+    public int $channel_id;
+    /** @var list<string> */
+    public array $omroepen;
+    private \DateTime $starttime;
+    private \DateTime $endtime;
+    public ?string $prog_id;
     public ProgramType $program_type;
+    public string $unharmonized_title;
+    public ?string $sub_title;
+    public ?PromoType $promo_type_id;
+    public ?string $secondary_unharmonized_title;
+    public ?string $tertiary_unharmonized_title;
+    public ?int $promotion_channel_id;
+    public ?int $promotion_day;
+    public ?RepeatCode $repeat_code;
+    public ?string $reconciliation_key;
+    public ?string $program_typology;
+    public ?string $ccc;
+    public ?string $promo_id;
 
     /**
      * @param Params $data
      */
     private function __construct( array $data ) {
-        $this->data = $data;
-        $this->program_type = $data['program_type'];
+        [
+            'channel_id' => $this->channel_id,
+            'omroepen' => $this->omroepen,
+            'starttime' => $this->starttime,
+            'endtime' => $this->endtime,
+            'prog_id' => $this->prog_id,
+            'program_type' => $this->program_type,
+            'unharmonized_title' => $this->unharmonized_title,
+            'sub_title' => $this->sub_title,
+            'promo_type_id' => $this->promo_type_id,
+            'secondary_unharmonized_title' => $this->secondary_unharmonized_title,
+            'tertiary_unharmonized_title' => $this->tertiary_unharmonized_title,
+            'promotion_channel_id' => $this->promotion_channel_id,
+            'promotion_day' => $this->promotion_day,
+            'repeat_code' => $this->repeat_code,
+            'reconciliation_key' => $this->reconciliation_key,
+            'program_typology' => $this->program_typology,
+            'ccc' => $this->ccc,
+            'promo_id' => $this->promo_id
+        ] = $data;
     }
 
     public function get_starttime(): \DateTime {
-        return clone $this->data['starttime'];
+        return clone $this->starttime;
     }
 
     public function get_endtime(): \DateTime {
-        return clone $this->data['endtime'];
+        return clone $this->endtime;
     }
 
     public function set_starttime( \DateTime $dt ): void {
-        $this->data['starttime'] = clone $dt;
+        $this->starttime = clone $dt;
     }
 
     public function set_endtime( \DateTime $dt ): void {
-        $this->data['endtime'] = clone $dt;
+        $this->endtime = clone $dt;
     }
 
     /**
@@ -81,7 +115,7 @@ class Entry {
         /** @phpstan-ignore isset.offset */
         if ( !isset($data['prog_id']) ) {
             throw new ASRunException(
-                'Field prod_id is mandatory for ProgramType Programma'
+                'Field prog_id is mandatory for ProgramType Programma'
             );
         }
         /** @phpstan-ignore isset.offset */
@@ -181,29 +215,29 @@ class Entry {
         $unharmonized_title = \iconv(
             iconv_get_encoding()['input_encoding'],
             'ascii//TRANSLIT',
-            \strtoupper($this->data['unharmonized_title'])
+            \strtoupper($this->unharmonized_title)
         );
         return [
-            (string)$this->data['channel_id'],
-            \implode(';', $this->data['omroepen']),
+            (string)$this->channel_id,
+            \implode(';', $this->omroepen),
             Log::format_theoretical_date($this->get_starttime()),
             Log::format_theoretical_time($this->get_starttime()),
             $this->get_endtime()->getTimestamp() - $this->get_starttime()->getTimestamp(),
             Log::format_theoretical_time($this->get_endtime()),
-            (string)$this->data['prog_id'],
+            (string)($this->prog_id ?? ''),
             $this->program_type->value,
             $unharmonized_title,
-            $this->data['sub_title'] ?? '',
-            isset($this->data['promo_type_id']) ? (string)$this->data['promo_type_id']->value : '-1',
-            $this->data['secondary_unharmonized_title'] ?? '',
-            $this->data['tertiary_unharmonized_title'] ?? '',
-            (string)($this->data['promotion_channel_id'] ?? -1),
-            (string)($this->data['promotion_day'] ?? -1),
-            isset($this->data['repeat_code']) ? (string)$this->data['repeat_code']->value : '-1',
-            $this->data['reconciliation_key'] ?? '',
-            $this->data['program_typology'] ?? '',
-            $this->data['ccc'] ?? '',
-            $this->data['promo_id'] ?? ''
+            $this->sub_title ?? '',
+            isset($this->promo_type_id) ? (string)$this->promo_type_id->value : '-1',
+            $this->secondary_unharmonized_title ?? '',
+            $this->tertiary_unharmonized_title ?? '',
+            (string)($this->promotion_channel_id ?? -1),
+            (string)($this->promotion_day ?? -1),
+            isset($this->repeat_code) ? (string)$this->repeat_code->value : '-1',
+            $this->reconciliation_key ?? '',
+            $this->program_typology ?? '',
+            $this->ccc ?? '',
+            $this->promo_id ?? ''
         ];
     }
 

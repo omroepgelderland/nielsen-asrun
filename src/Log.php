@@ -206,36 +206,45 @@ class Log {
     
     /**
      * Merges consecutive break entries into single break entries.
+     * Only the metadata of the first break in the block is preserved.
      */
     public function merge_breaks(): void {
         $this->sort();
 
-        // Remove consecutive breaks, leaving only the first.
         for ( $i = count($this->entries) - 1; $i > 0; $i-- ) {
             $entry = $this->entries[$i];
             $prev_entry = $this->entries[$i-1];
-            if ( $entry->program_type === ProgramType::Break && $prev_entry->program_type === ProgramType::Break ) {
+            if (
+                $entry->program_type === ProgramType::Break
+                && $prev_entry->program_type === ProgramType::Break
+                && $entry->channel_id === $prev_entry->channel_id
+                && $entry->omroepen == $prev_entry->omroepen
+            ) {
+                $prev_entry->set_endtime($entry->get_endtime());
                 \array_splice($this->entries, $i, 1);
             }
         }
+    }
 
-        // Make the start time and end time connect to the previous and next
-        // entries.
-        foreach ( $this->entries as $i => $entry ) {
-            $second = new \DateInterval('PT1S');
-            if ( $entry->program_type === ProgramType::Break ) {
-                if ( $i > 0 ) {
-                    $prev_end = $this->entries[$i-1]->get_endtime();
-                } else {
-                    $prev_end = $this->get_starttime();
-                }
-                if ( $i+1 < count($this->entries) ) {
-                    $next_start = $this->entries[$i+1]->get_starttime();
-                } else {
-                    $next_start = $this->get_endtime();
-                }
-                $entry->set_starttime($prev_end->add($second));
-                $entry->set_endtime($next_start->sub($second));
+    /**
+     * Merges consecutive program entries with the same prog_id together.
+     * Only the metadata of the first program in the block is preserved.
+     */
+    public function merge_programs(): void {
+        $this->sort();
+
+        for ( $i = count($this->entries) - 1; $i > 0; $i-- ) {
+            $entry = $this->entries[$i];
+            $prev_entry = $this->entries[$i-1];
+            if (
+                $entry->program_type === ProgramType::Programma
+                && $prev_entry->program_type === ProgramType::Programma
+                && $entry->prog_id === $prev_entry->prog_id
+                && $entry->channel_id === $prev_entry->channel_id
+                && $entry->omroepen == $prev_entry->omroepen
+            ) {
+                $prev_entry->set_endtime($entry->get_endtime());
+                \array_splice($this->entries, $i, 1);
             }
         }
     }
