@@ -29,11 +29,13 @@ if [[ $mode == "dev" ]]; then
         /usr/local/bin/composer8.1 check-platform-reqs || exit 1
         /usr/local/bin/composer8.1 dump-autoload || exit 1
         vendor/bin/phpstan analyse || exit 1
+        vendor/bin/phpunit tests || exit 1
     fi
     delete_dist_bestanden
 fi
 if [[ $mode == "production" || $mode == "staging" ]]; then
     vendor/bin/phpstan analyse || exit 1
+    vendor/bin/phpunit tests || exit 1
 
     git branch -D "$mode" 2>/dev/null
     git push origin --delete "$mode" 2>/dev/null

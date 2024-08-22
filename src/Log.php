@@ -16,6 +16,7 @@ class Log {
     private string $author;
     private string $channel_name;
     private string $channel_abbreviation;
+    private ?\DateTime $created;
     /** @var list<Entry> */
     private $entries;
 
@@ -23,11 +24,12 @@ class Log {
      * @param array{
      *     type: LogType,
      *     typology_source?: TypologySource,
-     *     encoding: string,
+     *     encoding?: string,
      *     broadcast_day: \DateTime,
      *     author: string,
      *     channel_name: string,
-     *     channel_abbreviation: string
+     *     channel_abbreviation: string,
+     *     created?: \DateTime
      * } $params
      */
     private function __construct( array $params ) {
@@ -37,23 +39,40 @@ class Log {
         } else {
             $this->typology_source = TypologySource::None;
         }
-        $this->encoding = \strtoupper($params['encoding']);
+        $this->encoding = \strtoupper($params['encoding'] ?? 'iso-8859-1');
         $this->broadcast_day = $params['broadcast_day'];
         $this->author = $params['author'];
         $this->channel_name = $params['channel_name'];
         $this->channel_abbreviation = $params['channel_abbreviation'];
+        $this->created = $params['created'] ?? null;
         $this->entries = [];
     }
 
     /**
      * Create a new AsRunLog.
+     * 
+     * Options:
+     * typology_source (optional): Current possible values are therefore NMO or
+     * NONE.
+     * encoding (optional, defaults to iso-8859-1): The name of the used
+     * character set. We accept only character sets with one byte per character.
+     * Only characters common to the desired charset *and* to ISO-8859-1 should
+     * be used (in other words, ISO-8859-1 gives the set of allowed characters,
+     * but other encodings are allowed).
+     * broadcast_day: The date of the broadcasts.
+     * author: file author like NPO, RTL, TALPA, ...in general the Channelgroup.
+     * channel_name: The channel name. Maximum length of 6 characters.
+     * channel_abbreviation: channel abbreviation for filename extension.
+     * created (optional): Creation date.
+     * 
      * @param array{
      *     typology_source?: TypologySource,
-     *     encoding: string,
+     *     encoding?: string,
      *     broadcast_day: \DateTime,
      *     author: string,
      *     channel_name: string,
-     *     channel_abbreviation: string
+     *     channel_abbreviation: string,
+     *     created?: \DateTime
      * } $params
      */
     public static function create_asrunlog( array $params ): self {
@@ -65,13 +84,29 @@ class Log {
 
     /**
      * Create a new Program Before file.
+     * 
+     * Options:
+     * typology_source (optional): Current possible values are therefore NMO or
+     * NONE.
+     * encoding (optional, defaults to iso-8859-1): The name of the used
+     * character set. We accept only character sets with one byte per character.
+     * Only characters common to the desired charset *and* to ISO-8859-1 should
+     * be used (in other words, ISO-8859-1 gives the set of allowed characters,
+     * but other encodings are allowed).
+     * broadcast_day: The date of the broadcasts.
+     * author: file author like NPO, RTL, TALPA, ...in general the Channelgroup.
+     * channel_name: The channel name. Maximum length of 6 characters.
+     * channel_abbreviation: channel abbreviation for filename extension.
+     * created (optional): Creation date.
+     * 
      * @param array{
      *     typology_source?: TypologySource,
-     *     encoding: string,
+     *     encoding?: string,
      *     broadcast_day: \DateTime,
      *     author: string,
      *     channel_name: string,
-     *     channel_abbreviation: string
+     *     channel_abbreviation: string,
+     *     created?: \DateTime
      * } $params
      */
     public static function create_program_before( array $params ): self {
@@ -94,7 +129,7 @@ class Log {
     public function get_endtime(): \DateTime {
         return (clone $this->broadcast_day)
             ->add(new \DateInterval('P1D'))
-            ->setTime(01, 59, 59, 0);
+            ->setTime(02, 0, 0, 0);
     }
 
     /**
@@ -127,7 +162,7 @@ class Log {
      * @return list<list<string>>
      */
     private function get_header_lines() {
-        $nu = new \DateTime();
+        $created = $this->created ?? new \DateTime();
         $padded_channel = \str_pad(\substr($this->channel_name, 0, 6), 6);
         return [
             [
@@ -136,9 +171,9 @@ class Log {
                 'BROADCASTDAY',
                 $this->broadcast_day->format('Ymd'),
                 'CREATED',
-                $nu->format('Ymd'),
+                $created->format('Ymd'),
                 'AT',
-                $nu->format('His'),
+                $created->format('His'),
                 $this->type === LogType::AsRunLog ? 'BY' : 'CHANNEL',
                 $padded_channel
             ],
@@ -182,7 +217,7 @@ class Log {
 
         $lines = $this->get_header_lines();
         $lines = \array_merge($lines, \array_map(fn($entry) => $entry->to_array(), $this->entries));
-        $lines[] = [''];
+        $lines[] = [];
 
         $csv_lines = \array_map(fn($line) => \implode("\t", $line), $lines);
         $data = \implode("\r\n", $csv_lines);
@@ -254,15 +289,14 @@ class Log {
      * entry.
      */
     private function fix_overlaps(): void {
-        $second = new \DateInterval('PT1S');
         foreach ( $this->entries as $i => $entry ) {
             if ( $i+1 < count($this->entries) ) {
                 $next_start = $this->entries[$i+1]->get_starttime();
             } else {
-                $next_start = $this->get_endtime()->add($second);
+                $next_start = $this->get_endtime();
             }
             if ( $entry->get_endtime() >= $next_start ) {
-                $entry->set_endtime($next_start->sub($second));
+                $entry->set_endtime($next_start);
             }
         }
     }
@@ -276,11 +310,10 @@ class Log {
      */
     public function fill_gaps(): void {
         $this->sort();
-        $second = new \DateInterval('PT1S');
         for ( $i = 0; $i < count($this->entries) - 1; $i++ ) {
             $entry = $this->entries[$i];
             $next_entry = $this->entries[$i+1];
-            $entry->set_endtime($next_entry->get_starttime()->sub($second));
+            $entry->set_endtime($next_entry->get_starttime());
         }
         $this->entries[0]->set_starttime($this->get_starttime());
         $this->entries[count($this->entries) - 1]->set_endtime($this->get_endtime());

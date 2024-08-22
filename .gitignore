@@ -41,6 +41,7 @@ ehthumbs.db
 Icon?
 Thumbs.db
 .directory
+*.cache
 
 # Composer #
 /vendor/

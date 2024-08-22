@@ -3,7 +3,7 @@
  * @author Remy Glaser <rglaser@gld.nl>
  */
 
- namespace nielsen_asrun;
+namespace nielsen_asrun;
 
 /**
  * Single line in an AsRunLog file.
@@ -55,26 +55,24 @@ class Entry {
      * @param Params $data
      */
     private function __construct( array $data ) {
-        [
-            'channel_id' => $this->channel_id,
-            'omroepen' => $this->omroepen,
-            'starttime' => $this->starttime,
-            'endtime' => $this->endtime,
-            'prog_id' => $this->prog_id,
-            'program_type' => $this->program_type,
-            'unharmonized_title' => $this->unharmonized_title,
-            'sub_title' => $this->sub_title,
-            'promo_type_id' => $this->promo_type_id,
-            'secondary_unharmonized_title' => $this->secondary_unharmonized_title,
-            'tertiary_unharmonized_title' => $this->tertiary_unharmonized_title,
-            'promotion_channel_id' => $this->promotion_channel_id,
-            'promotion_day' => $this->promotion_day,
-            'repeat_code' => $this->repeat_code,
-            'reconciliation_key' => $this->reconciliation_key,
-            'program_typology' => $this->program_typology,
-            'ccc' => $this->ccc,
-            'promo_id' => $this->promo_id
-        ] = $data;
+        $this->channel_id = $data['channel_id'];
+        $this->omroepen = $data['omroepen'];
+        $this->starttime = $data['starttime'];
+        $this->endtime = $data['endtime'];
+        $this->prog_id = $data['prog_id'] ?? null;
+        $this->program_type = $data['program_type'];
+        $this->unharmonized_title = $data['unharmonized_title'];
+        $this->sub_title = $data['sub_title'] ?? null;
+        $this->promo_type_id = $data['promo_type_id'] ?? null;
+        $this->secondary_unharmonized_title = $data['secondary_unharmonized_title'] ?? null;
+        $this->tertiary_unharmonized_title = $data['tertiary_unharmonized_title'] ?? null;
+        $this->promotion_channel_id = $data['promotion_channel_id'] ?? null;
+        $this->promotion_day = $data['promotion_day'] ?? null;
+        $this->repeat_code = $data['repeat_code'] ?? null;
+        $this->reconciliation_key = $data['reconciliation_key'] ?? null;
+        $this->program_typology = $data['program_typology'] ?? null;
+        $this->ccc = $data['ccc'] ?? null;
+        $this->promo_id = $data['promo_id'] ?? null;
     }
 
     public function get_starttime(): \DateTime {
@@ -95,6 +93,28 @@ class Entry {
 
     /**
      * Create a new entry for a program.
+     * 
+     * options:
+     * channel_id: Channel ID.
+     * omroepen: ‘Omroep’ name – Omroep (or omroep combination) claiming the
+     * editorial responsibility of the program.
+     * starttime: Start of the entry.
+     * endtime: End of the entry. Unlike the output format the end time does not
+     * include the following second. For instance, if the next entry starts at
+     * 17:00, this entry ends at 17:00, not 16:59.
+     * prog_id: Channel unique identifier for the program. Please contact NMO
+     * for definitions, may be channel specific.
+     * unharmonized_title: Program title. Normally it should be the title the
+     * channel wants to publish. Also used for the internal promo title.
+     * sub_title (optional): Subtitle the channel wants to publish.
+     * secondary_unharmonized_title (optional):
+     * tertiary_unharmonized_title (optional):
+     * repeat_code: First broadcast or repeat.
+     * reconciliation_key (optional): Key from the broadcaster. If the event is
+     * linked, Nielsen will provide the same key.
+     * program_typology (optional): NMO Program Typology.
+     * ccc (optional): Content Classification Code for NPO.
+     * 
      * @param array{
      *     channel_id: int,
      *     omroepen: list<string>,
@@ -132,6 +152,30 @@ class Entry {
 
     /**
      * Create a new entry for a promotion.
+     * 
+     * options:
+     * channel_id: Channel ID.
+     * omroepen: ‘Omroep’ name – Omroep (or omroep combination) claiming the
+     * editorial responsibility of the program.
+     * starttime: Start of the entry.
+     * endtime: End of the entry. Unlike the output format the end time does not
+     * include the following second. For instance, if the next entry starts at
+     * 17:00, this entry ends at 17:00, not 16:59.
+     * unharmonized_title: Program title. Normally it should be the title the
+     * channel wants to publish. Also used for the internal promo title.
+     * sub_title (optional): Subtitle the channel wants to publish.
+     * promo_type_id: Classification type of the promos.
+     * secondary_unharmonized_title (optional):
+     * tertiary_unharmonized_title (optional):
+     * promotion_channel_id (optional):
+     * promotion_day (optional):
+     * repeat_code (optional): First broadcast or repeat.
+     * reconciliation_key (optional): Key from the broadcaster. If the event is
+     * linked, Nielsen will provide the same key.
+     * ccc (optional): Content Classification Code for NPO.
+     * promo_id (optional): Broadcaster unique identifier for the promo. Should
+     * be unique per promo creative.
+     * 
      * @param array{
      *     channel_id: int,
      *     omroepen: list<string>,
@@ -165,6 +209,24 @@ class Entry {
 
     /**
      * Create a new entry for a Station ID fragment.
+     * 
+     * options:
+     * channel_id: Channel ID.
+     * omroepen: ‘Omroep’ name – Omroep (or omroep combination) claiming the
+     * editorial responsibility of the program.
+     * starttime: Start of the entry.
+     * endtime: End of the entry. Unlike the output format the end time does not
+     * include the following second. For instance, if the next entry starts at
+     * 17:00, this entry ends at 17:00, not 16:59.
+     * unharmonized_title: Program title. Normally it should be the title the
+     * channel wants to publish. Also used for the internal promo title.
+     * sub_title (optional): Subtitle the channel wants to publish.
+     * secondary_unharmonized_title (optional):
+     * tertiary_unharmonized_title (optional):
+     * reconciliation_key (optional): Key from the broadcaster. If the event is
+     * linked, Nielsen will provide the same key.
+     * ccc (optional): Content Classification Code for NPO.
+     * 
      * @param array{
      *     channel_id: int,
      *     omroepen: list<string>,
@@ -187,6 +249,23 @@ class Entry {
 
     /**
      * Create a new entry for a break.
+     * 
+     * options:
+     * channel_id: Channel ID.
+     * omroepen: ‘Omroep’ name – Omroep (or omroep combination) claiming the
+     * editorial responsibility of the program.
+     * starttime: Start of the entry.
+     * endtime: End of the entry. Unlike the output format the end time does not
+     * include the following second. For instance, if the next entry starts at
+     * 17:00, this entry ends at 17:00, not 16:59.
+     * unharmonized_title: Break code.
+     * sub_title (optional): Subtitle the channel wants to publish.
+     * secondary_unharmonized_title (optional):
+     * tertiary_unharmonized_title (optional):
+     * reconciliation_key (optional): Key from the broadcaster. If the event is
+     * linked, Nielsen will provide the same key.
+     * ccc (optional): Content Classification Code for NPO.
+     * 
      * @param array{
      *     channel_id: int,
      *     omroepen: list<string>,
@@ -217,13 +296,15 @@ class Entry {
             'ascii//TRANSLIT',
             \strtoupper($this->unharmonized_title)
         );
+        $second_before_end = $this->get_endtime()
+            ->sub(new \DateInterval('PT1S'));
         return [
             (string)$this->channel_id,
             \implode(';', $this->omroepen),
             Log::format_theoretical_date($this->get_starttime()),
             Log::format_theoretical_time($this->get_starttime()),
             $this->get_endtime()->getTimestamp() - $this->get_starttime()->getTimestamp(),
-            Log::format_theoretical_time($this->get_endtime()),
+            Log::format_theoretical_time($second_before_end),
             (string)($this->prog_id ?? ''),
             $this->program_type->value,
             $unharmonized_title,
