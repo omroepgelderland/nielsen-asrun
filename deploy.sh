@@ -29,13 +29,17 @@ if [[ $mode == "dev" ]]; then
         /usr/local/bin/composer8.1 check-platform-reqs || exit 1
         /usr/local/bin/composer8.1 dump-autoload || exit 1
         vendor/bin/phpstan analyse || exit 1
-        vendor/bin/phpunit tests || exit 1
+        php8.1 vendor/bin/phpunit tests || exit 1
+        php8.2 vendor/bin/phpunit tests || exit 1
+        php8.3 vendor/bin/phpunit tests || exit 1
     fi
     delete_dist_bestanden
 fi
 if [[ $mode == "production" || $mode == "staging" ]]; then
     vendor/bin/phpstan analyse || exit 1
-    vendor/bin/phpunit tests || exit 1
+    php8.1 vendor/bin/phpunit tests || exit 1
+    php8.2 vendor/bin/phpunit tests || exit 1
+    php8.3 vendor/bin/phpunit tests || exit 1
 
     git branch -D "$mode" 2>/dev/null
     git push origin --delete "$mode" 2>/dev/null
@@ -46,7 +50,10 @@ if [[ $mode == "production" || $mode == "staging" ]]; then
 
     # Dev bestanden eruit
     git rm -r \
-        deploy.sh || exit 1
+        deploy.sh \
+        docs \
+        phpstan.dist.neon \
+        tests || exit 1
     if [[ $mode == "production" ]]; then
         git commit -m "[build] $git_versie" || exit 1
         git tag "$git_versie" || exit 1
