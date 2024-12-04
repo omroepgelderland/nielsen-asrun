@@ -53,6 +53,7 @@ class Entry {
 
     /**
      * @param Params $data
+     * @throws EndTimeBeforeStart
      */
     private function __construct( array $data ) {
         $this->channel_id = $data['channel_id'];
@@ -73,6 +74,14 @@ class Entry {
         $this->program_typology = $data['program_typology'] ?? null;
         $this->ccc = $data['ccc'] ?? null;
         $this->promo_id = $data['promo_id'] ?? null;
+
+        if ( $this->endtime <= $this->starttime ) {
+            $start_str = $this->starttime->format('H:i:s');
+            $end_str = $this->endtime->format('H:i:s');
+            throw new EndTimeBeforeStart(
+                "End time {$end_str} is earlier or equal to start time {$start_str}"
+            );
+        }
     }
 
     public function get_starttime(): \DateTime {
@@ -130,6 +139,8 @@ class Entry {
      *     program_typology?: ?string,
      *     ccc?: ?string
      * } $data
+     * 
+     * @throws EndTimeBeforeStart
      */
     public static function create_program_entry( $data ): self {
         /** @phpstan-ignore isset.offset */
@@ -193,6 +204,8 @@ class Entry {
      *     ccc?: ?string,
      *     promo_id?: ?string
      * } $data
+     * 
+     * @throws EndTimeBeforeStart
      */
     public static function create_promo_entry( $data ): self {
         /** @phpstan-ignore isset.offset */
@@ -239,6 +252,8 @@ class Entry {
      *     reconciliation_key?: ?string,
      *     ccc?: ?string
      * } $data
+     * 
+     * @throws EndTimeBeforeStart
      */
     public static function create_station_id_entry( $data): self {
         return new self([
@@ -278,6 +293,8 @@ class Entry {
      *     reconciliation_key?: ?string,
      *     ccc?: ?string
      * } $data
+     * 
+     * @throws EndTimeBeforeStart
      */
     public static function create_break_entry( $data ): self {
         return new self([
@@ -303,7 +320,7 @@ class Entry {
             \implode(';', $this->omroepen),
             Log::format_theoretical_date($this->get_starttime()),
             Log::format_theoretical_time($this->get_starttime()),
-            $this->get_endtime()->getTimestamp() - $this->get_starttime()->getTimestamp(),
+            (string)($this->get_endtime()->getTimestamp() - $this->get_starttime()->getTimestamp()),
             Log::format_theoretical_time($second_before_end),
             (string)($this->prog_id ?? ''),
             $this->program_type->value,

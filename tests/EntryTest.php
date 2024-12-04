@@ -103,6 +103,18 @@ final class EntryTest extends TestCase {
             $entry->__toString()
         );
     }
+
+    public function testEndTimeBeforeStartTime(): void {
+        $this->expectException(EndTimeBeforeStart::class);
+        Entry::create_promo_entry([
+            'channel_id' => 193,
+            'omroepen' => ['OG'],
+            'starttime' => new \DateTime('2024-06-17 16:53:59'),
+            'endtime' => new \DateTime('2024-06-17 16:53:58'),
+            'unharmonized_title' => '(PROMO_TEASER) GLD NIEUWS',
+            'promo_type_id' => PromoType::Promo
+        ]);
+    }
     
     // public function testProgramEntryIncomplete(): void {
     //     $this->expectException(\TypeError::class);

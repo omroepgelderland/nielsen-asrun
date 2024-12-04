@@ -66,6 +66,9 @@ final class LogTest extends TestCase {
         $this->assertEquals($expected, $log->__toString());
     }
 
+    /**
+     * Entry2 starts between entry1 start and entry1 end.
+     */
     public function testOverlap(): void {
         $log = $this->getTestLog();
 
