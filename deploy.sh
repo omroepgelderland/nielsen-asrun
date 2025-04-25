@@ -20,7 +20,7 @@ fi
 oude_versie="$(git tag --list --sort=v:refname | grep -P '^\d+\.\d+\.\d+' | tail -n1)"
 echo "De huidige versie is $oude_versie. Versieverhoging? (major|minor|patch|premajor|preminor|prepatch|prerelease) "
 read -r versie_type
-nieuwe_versie="$(semver -i "$versie_type" "$oude_versie")"
+nieuwe_versie="$(semver -i "$versie_type" "$oude_versie")" || exit 1
 
 git tag "$nieuwe_versie" || exit 1
 git push origin || exit 1
