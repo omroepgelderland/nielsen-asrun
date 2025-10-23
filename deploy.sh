@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then
     echo "Op branch $current_branch ipv master. Toch doorgaan? (j/n)"
@@ -9,7 +11,7 @@ if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then
     fi
 fi
 
-./deploy_dev.sh || exit 1
+./deploy_dev.sh
 
 if [ -n "$(git status --untracked-files=no --porcelain)" ]; then
     git status
@@ -24,8 +26,8 @@ fi
 oude_versie="$(git tag --list --sort=v:refname | grep -P '^\d+\.\d+\.\d+' | tail -n1)"
 echo "De huidige versie is $oude_versie. Versieverhoging? (major|minor|patch|premajor|preminor|prepatch|prerelease) "
 read -r versie_type
-nieuwe_versie="$(semver -i "$versie_type" "$oude_versie")" || exit 1
+nieuwe_versie="$(semver -i "$versie_type" "$oude_versie")"
 
-git tag "$nieuwe_versie" || exit 1
-git push origin || exit 1
-git push origin "$nieuwe_versie" || exit 1
+git tag "$nieuwe_versie"
+git push origin
+git push origin "$nieuwe_versie"
